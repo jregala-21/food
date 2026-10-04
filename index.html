@@ -31,6 +31,8 @@
 
     <main class="max-w-4xl mx-auto p-4 md:p-6">
 
+        <p id="firebase-status" role="status" aria-live="polite" class="mb-4 text-sm text-slate-500">Connecting to Firebase...</p>
+
         <!-- ================= MEMBER SECTION ================= -->
         <section id="section-member" class="space-y-6">
             
@@ -132,13 +134,73 @@
             { id: '3', name: 'Alex Reyes', ministry: 'DANCE', present: false }
         ];
 
-        // Load members from localStorage or set initial data
-        let members = JSON.parse(localStorage.getItem('food_dist_members')) || initialMembers;
+        const firebaseMembersUrl = 'https://food-ee270-default-rtdb.firebaseio.com/members.json';
+        const firebaseStatus = document.getElementById('firebase-status');
+        let members = [];
+        let firebaseWriteQueue = Promise.resolve();
 
-        // Save data to localStorage
+        function setFirebaseStatus(message, isError = false) {
+            firebaseStatus.textContent = message;
+            firebaseStatus.className = `mb-4 text-sm ${isError ? 'text-red-600' : 'text-slate-500'}`;
+        }
+
+        // Save locally as a fallback, then persist the same snapshot to Firebase.
         function saveData() {
-            localStorage.setItem('food_dist_members', JSON.stringify(members));
+            const snapshot = members.map(member => ({ ...member }));
+            try {
+                localStorage.setItem('food_dist_members', JSON.stringify(snapshot));
+            } catch (error) {
+                console.warn('Could not save the local backup:', error);
+            }
             updateUI();
+
+            firebaseWriteQueue = firebaseWriteQueue.then(async () => {
+                setFirebaseStatus('Saving changes to Firebase...');
+                const response = await fetch(firebaseMembersUrl, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(snapshot)
+                });
+                if (!response.ok) {
+                    throw new Error(`Firebase returned ${response.status}`);
+                }
+                setFirebaseStatus('All changes saved to Firebase.');
+            }).catch(error => {
+                console.error('Firebase save failed:', error);
+                setFirebaseStatus('Firebase save failed. Changes are only in this browser; check database rules and connection.', true);
+            });
+        }
+
+        async function loadMembers() {
+            try {
+                const response = await fetch(firebaseMembersUrl);
+                if (!response.ok) {
+                    throw new Error(`Firebase returned ${response.status}`);
+                }
+
+                const remoteMembers = await response.json();
+                if (Array.isArray(remoteMembers)) {
+                    members = remoteMembers;
+                    localStorage.setItem('food_dist_members', JSON.stringify(members));
+                    setFirebaseStatus('Connected to Firebase.');
+                    updateUI();
+                    return;
+                }
+
+                const localMembers = JSON.parse(localStorage.getItem('food_dist_members'));
+                members = Array.isArray(localMembers) ? localMembers : initialMembers;
+                saveData();
+            } catch (error) {
+                console.error('Firebase load failed:', error);
+                try {
+                    const localMembers = JSON.parse(localStorage.getItem('food_dist_members'));
+                    members = Array.isArray(localMembers) ? localMembers : initialMembers;
+                } catch {
+                    members = initialMembers;
+                }
+                setFirebaseStatus('Could not connect to Firebase. Showing browser-saved data; changes may not sync.', true);
+                updateUI();
+            }
         }
 
         // Switch between Member and Admin Tabs
@@ -318,6 +380,7 @@
 
         // Initial Load
         updateUI();
+        loadMembers();
     </script>
 </body>
 </html>
