@@ -39,7 +39,7 @@
             <!-- Ministry Counter Cards -->
             <div>
                 <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-3">Attendance Summary</h2>
-                <div class="grid grid-cols-3 gap-3 md:gap-4">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
                     <!-- JAM Stats -->
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 text-center">
                         <span class="inline-block px-2 py-1 text-xs font-bold bg-amber-100 text-amber-700 rounded-md mb-1">JAM</span>
@@ -56,6 +56,11 @@
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 text-center">
                         <span class="inline-block px-2 py-1 text-xs font-bold bg-purple-100 text-purple-700 rounded-md mb-1">DANCE</span>
                         <div id="count-dance" class="text-2xl md:text-3xl font-extrabold text-slate-800">0</div>
+                        <span class="text-xs text-slate-500">Present</span>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 text-center">
+                        <span class="inline-block px-2 py-1 text-xs font-bold bg-sky-100 text-sky-700 rounded-md mb-1">MAN</span>
+                        <div id="count-man" class="text-2xl md:text-3xl font-extrabold text-slate-800">0</div>
                         <span class="text-xs text-slate-500">Present</span>
                     </div>
                 </div>
@@ -101,6 +106,7 @@
                             <option value="JAM">JAM</option>
                             <option value="VIA">VIA</option>
                             <option value="DANCE">DANCE</option>
+                            <option value="MAN">MAN</option>
                         </select>
                     </div>
                     <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition shadow">
@@ -123,6 +129,29 @@
             </div>
         </section>
 
+        <dialog id="edit-member-dialog" class="w-[calc(100%-2rem)] max-w-md rounded-xl p-0 shadow-xl backdrop:bg-slate-900/50">
+            <form id="edit-member-form" onsubmit="handleEditMember(event)" class="space-y-4 p-5">
+                <h2 class="text-lg font-bold text-slate-800">Edit Member</h2>
+                <div>
+                    <label for="edit-name" class="mb-1 block text-sm font-medium text-slate-700">Full Name</label>
+                    <input id="edit-name" type="text" required class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label for="edit-ministry" class="mb-1 block text-sm font-medium text-slate-700">Ministry</label>
+                    <select id="edit-ministry" required class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="JAM">JAM</option>
+                        <option value="VIA">VIA</option>
+                        <option value="DANCE">DANCE</option>
+                        <option value="MAN">MAN</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="document.getElementById('edit-member-dialog').close()" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">Save Changes</button>
+                </div>
+            </form>
+        </dialog>
+
     </main>
 
     <!-- JavaScript Application Logic -->
@@ -138,6 +167,7 @@
         const firebaseStatus = document.getElementById('firebase-status');
         let members = [];
         let firebaseWriteQueue = Promise.resolve();
+        let editingMemberId = null;
 
         function setFirebaseStatus(message, isError = false) {
             firebaseStatus.textContent = message;
@@ -257,6 +287,29 @@
             alert(`${newMember.name} added to ${newMember.ministry}!`);
         }
 
+        function openEditMember(id) {
+            const member = members.find(item => item.id === id);
+            if (!member) return;
+
+            editingMemberId = id;
+            document.getElementById('edit-name').value = member.name;
+            document.getElementById('edit-ministry').value = member.ministry;
+            document.getElementById('edit-member-dialog').showModal();
+        }
+
+        function handleEditMember(e) {
+            e.preventDefault();
+            const name = document.getElementById('edit-name').value.trim();
+            const ministry = document.getElementById('edit-ministry').value;
+            members = members.map(member => member.id === editingMemberId
+                ? { ...member, name, ministry }
+                : member
+            );
+            editingMemberId = null;
+            document.getElementById('edit-member-dialog').close();
+            saveData();
+        }
+
         // Delete a member (Admin)
         function deleteMember(id) {
             if (confirm("Are you sure you want to delete this member?")) {
@@ -279,6 +332,7 @@
                 case 'JAM': return 'bg-amber-100 text-amber-700';
                 case 'VIA': return 'bg-emerald-100 text-emerald-700';
                 case 'DANCE': return 'bg-purple-100 text-purple-700';
+                case 'MAN': return 'bg-sky-100 text-sky-700';
                 default: return 'bg-slate-100 text-slate-700';
             }
         }
@@ -345,9 +399,14 @@
                             <span class="inline-block text-[10px] px-2 py-0.5 rounded-full font-bold ${badgeClass}">${member.ministry}</span>
                         </div>
                     </div>
-                    <button onclick="deleteMember('${member.id}')" class="text-slate-400 hover:text-red-600 p-2 rounded-lg transition" title="Delete Member">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
+                    <div class="flex items-center gap-1">
+                        <button onclick="openEditMember('${member.id}')" class="rounded-lg px-3 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50" title="Edit Member">
+                            <i class="fa-solid fa-pen-to-square mr-1" aria-hidden="true"></i>Edit
+                        </button>
+                        <button onclick="deleteMember('${member.id}')" class="rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600" title="Delete Member" aria-label="Delete ${member.name}">
+                            <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 `;
                 listContainer.appendChild(li);
             });
@@ -355,7 +414,7 @@
 
         // Update Statistics Counters
         function updateCounters() {
-            const counts = { JAM: 0, VIA: 0, DANCE: 0 };
+            const counts = { JAM: 0, VIA: 0, DANCE: 0, MAN: 0 };
             let totalPresent = 0;
 
             members.forEach(m => {
@@ -368,6 +427,7 @@
             document.getElementById('count-jam').textContent = counts.JAM;
             document.getElementById('count-via').textContent = counts.VIA;
             document.getElementById('count-dance').textContent = counts.DANCE;
+            document.getElementById('count-man').textContent = counts.MAN;
             document.getElementById('total-present-tag').textContent = `${totalPresent} Present Total`;
         }
 
