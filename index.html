@@ -39,29 +39,39 @@
             <!-- Ministry Counter Cards -->
             <div>
                 <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-3">Attendance Summary</h2>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
+                <div id="attendance-summary" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
+                    <div id="summary-all" class="ministry-summary-card bg-indigo-600 p-4 rounded-xl shadow-sm text-center text-white">
+                        <span class="inline-block px-2 py-1 text-xs font-bold bg-white/20 rounded-md mb-1">ALL MINISTRIES</span>
+                        <div id="count-all" class="text-2xl md:text-3xl font-extrabold">0</div>
+                        <span class="text-xs text-indigo-100">Present total</span>
+                    </div>
                     <!-- JAM Stats -->
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 text-center">
+                    <div data-ministry="JAM" class="ministry-summary-card bg-white p-4 rounded-xl shadow-sm border border-slate-200 text-center">
                         <span class="inline-block px-2 py-1 text-xs font-bold bg-amber-100 text-amber-700 rounded-md mb-1">JAM</span>
                         <div id="count-jam" class="text-2xl md:text-3xl font-extrabold text-slate-800">0</div>
                         <span class="text-xs text-slate-500">Present</span>
                     </div>
                     <!-- VIA Stats -->
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 text-center">
+                    <div data-ministry="VIA" class="ministry-summary-card bg-white p-4 rounded-xl shadow-sm border border-slate-200 text-center">
                         <span class="inline-block px-2 py-1 text-xs font-bold bg-emerald-100 text-emerald-700 rounded-md mb-1">VIA</span>
                         <div id="count-via" class="text-2xl md:text-3xl font-extrabold text-slate-800">0</div>
                         <span class="text-xs text-slate-500">Present</span>
                     </div>
                     <!-- DANCE Stats -->
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 text-center">
+                    <div data-ministry="DANCE" class="ministry-summary-card bg-white p-4 rounded-xl shadow-sm border border-slate-200 text-center">
                         <span class="inline-block px-2 py-1 text-xs font-bold bg-purple-100 text-purple-700 rounded-md mb-1">DANCE</span>
                         <div id="count-dance" class="text-2xl md:text-3xl font-extrabold text-slate-800">0</div>
                         <span class="text-xs text-slate-500">Present</span>
                     </div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 text-center">
+                    <div data-ministry="MAN" class="ministry-summary-card bg-white p-4 rounded-xl shadow-sm border border-slate-200 text-center">
                         <span class="inline-block px-2 py-1 text-xs font-bold bg-sky-100 text-sky-700 rounded-md mb-1">MAN</span>
                         <div id="count-man" class="text-2xl md:text-3xl font-extrabold text-slate-800">0</div>
                         <span class="text-xs text-slate-500">Present</span>
+                    </div>
+                    <div id="selected-total-card" class="hidden mt-3 rounded-xl bg-indigo-600 p-4 text-center text-white shadow-sm sm:max-w-xs">
+                        <span id="selected-total-label" class="inline-block rounded-md bg-white/20 px-2 py-1 text-xs font-bold">SELECTED MINISTRIES</span>
+                        <div id="count-selected" class="text-2xl font-extrabold">0</div>
+                        <span class="text-xs text-indigo-100">Present total</span>
                     </div>
                 </div>
             </div>
@@ -74,10 +84,26 @@
                 </div>
             </div>
 
+            <!-- Ministry Filters -->
+            <div>
+                <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-1">Select ministries</h3>
+                <p class="mb-2 text-xs text-slate-500">Select one or more ministries, or choose All Ministries to show every total.</p>
+                <div class="flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Filter members by ministry">
+                    <button id="ministry-tab-all" type="button" aria-pressed="true" onclick="filterByMinistry('ALL')" class="ministry-filter whitespace-nowrap rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm">All Ministries</button>
+                    <button id="ministry-tab-jam" type="button" aria-pressed="false" onclick="filterByMinistry('JAM')" class="ministry-filter whitespace-nowrap rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50">JAM</button>
+                    <button id="ministry-tab-via" type="button" aria-pressed="false" onclick="filterByMinistry('VIA')" class="ministry-filter whitespace-nowrap rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50">VIA</button>
+                    <button id="ministry-tab-dance" type="button" aria-pressed="false" onclick="filterByMinistry('DANCE')" class="ministry-filter whitespace-nowrap rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50">DANCE</button>
+                    <button id="ministry-tab-man" type="button" aria-pressed="false" onclick="filterByMinistry('MAN')" class="ministry-filter whitespace-nowrap rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50">MAN</button>
+                    <a href="extended.html" target="_blank" rel="noopener" class="whitespace-nowrap rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+                        <i class="fa-solid fa-up-right-from-square mr-1" aria-hidden="true"></i> Extended View
+                    </a>
+                </div>
+            </div>
+
             <!-- Member List for Attendance -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="p-4 border-b border-slate-100 flex justify-between items-center">
-                    <h3 class="font-bold text-slate-700">Member List</h3>
+                    <h3 id="member-list-title" class="font-bold text-slate-700">All Ministries</h3>
                     <span id="total-present-tag" class="text-xs bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full font-medium">0 Present Total</span>
                 </div>
                 <ul id="member-list-display" class="divide-y divide-slate-100">
@@ -152,6 +178,20 @@
             </form>
         </dialog>
 
+        <dialog id="message-dialog" aria-labelledby="message-dialog-title" class="w-[calc(100%-2rem)] max-w-sm rounded-2xl p-0 shadow-2xl backdrop:bg-slate-900/60">
+            <div class="p-6 text-center">
+                <div id="message-dialog-icon" class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+                    <i class="fa-solid fa-circle-info text-xl" aria-hidden="true"></i>
+                </div>
+                <h2 id="message-dialog-title" class="text-lg font-bold text-slate-800">Notice</h2>
+                <p id="message-dialog-text" class="mt-2 text-sm text-slate-600"></p>
+                <div class="mt-6 flex justify-center gap-3">
+                    <button id="message-dialog-cancel" type="button" class="hidden rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Cancel</button>
+                    <button id="message-dialog-confirm" type="button" class="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700">OK</button>
+                </div>
+            </div>
+        </dialog>
+
     </main>
 
     <!-- JavaScript Application Logic -->
@@ -168,6 +208,8 @@
         let members = [];
         let firebaseWriteQueue = Promise.resolve();
         let editingMemberId = null;
+        let selectedMinistries = null;
+        let resolveMessageDialog = null;
 
         function setFirebaseStatus(message, isError = false) {
             firebaseStatus.textContent = message;
@@ -255,6 +297,63 @@
             }
         }
 
+        function showMessageDialog({ title, message, confirmLabel = 'OK', cancelLabel = 'Cancel', isConfirmation = false, isDestructive = false }) {
+            const dialog = document.getElementById('message-dialog');
+            const confirmButton = document.getElementById('message-dialog-confirm');
+            const cancelButton = document.getElementById('message-dialog-cancel');
+            const icon = document.getElementById('message-dialog-icon');
+
+            document.getElementById('message-dialog-title').textContent = title;
+            document.getElementById('message-dialog-text').textContent = message;
+            confirmButton.textContent = confirmLabel;
+            confirmButton.className = `rounded-lg px-5 py-2 text-sm font-semibold text-white ${isDestructive ? 'bg-red-600 hover:bg-red-700' : 'bg-indigo-600 hover:bg-indigo-700'}`;
+            cancelButton.textContent = cancelLabel;
+            cancelButton.classList.toggle('hidden', !isConfirmation);
+            icon.className = `mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full ${isDestructive ? 'bg-red-100 text-red-600' : 'bg-indigo-100 text-indigo-600'}`;
+            icon.innerHTML = `<i class="fa-solid ${isDestructive ? 'fa-triangle-exclamation' : isConfirmation ? 'fa-circle-question' : 'fa-circle-check'} text-xl" aria-hidden="true"></i>`;
+
+            return new Promise(resolve => {
+                resolveMessageDialog = resolve;
+                dialog.showModal();
+                confirmButton.focus();
+            });
+        }
+
+        function closeMessageDialog(confirmed) {
+            const dialog = document.getElementById('message-dialog');
+            if (!dialog.open) return;
+            dialog.close();
+            if (resolveMessageDialog) {
+                resolveMessageDialog(confirmed);
+                resolveMessageDialog = null;
+            }
+        }
+
+        function filterByMinistry(ministry) {
+            if (ministry === 'ALL') {
+                selectedMinistries = null;
+            } else if (!selectedMinistries) {
+                selectedMinistries = new Set([ministry]);
+            } else {
+                if (selectedMinistries.has(ministry)) {
+                    selectedMinistries.delete(ministry);
+                    if (selectedMinistries.size === 0) selectedMinistries = null;
+                } else {
+                    selectedMinistries.add(ministry);
+                }
+            }
+
+            document.querySelectorAll('.ministry-filter').forEach(button => {
+                const buttonMinistry = button.id.replace('ministry-tab-', '').toUpperCase();
+                const isSelected = buttonMinistry === 'ALL'
+                    ? !selectedMinistries
+                    : Boolean(selectedMinistries && selectedMinistries.has(buttonMinistry));
+                button.setAttribute('aria-pressed', String(isSelected));
+                button.className = `ministry-filter whitespace-nowrap rounded-lg px-4 py-2 text-sm font-semibold transition ${isSelected ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`;
+            });
+            updateUI();
+        }
+
         // Toggle Present state for a member
         function toggleAttendance(id) {
             members = members.map(member => {
@@ -284,7 +383,10 @@
 
             // Clear Input
             nameInput.value = '';
-            alert(`${newMember.name} added to ${newMember.ministry}!`);
+            showMessageDialog({
+                title: 'Member added',
+                message: `${newMember.name} was added to ${newMember.ministry}.`
+            });
         }
 
         function openEditMember(id) {
@@ -311,16 +413,30 @@
         }
 
         // Delete a member (Admin)
-        function deleteMember(id) {
-            if (confirm("Are you sure you want to delete this member?")) {
+        async function deleteMember(id) {
+            const member = members.find(item => item.id === id);
+            if (!member) return;
+            if (await showMessageDialog({
+                title: 'Delete member?',
+                message: `This will permanently remove ${member.name} from the member list.`,
+                confirmLabel: 'Delete',
+                isConfirmation: true,
+                isDestructive: true
+            })) {
                 members = members.filter(m => m.id !== id);
                 saveData();
             }
         }
 
         // Reset all attendance flags (Admin)
-        function resetAllAttendance() {
-            if (confirm("Reset attendance status for ALL members?")) {
+        async function resetAllAttendance() {
+            if (await showMessageDialog({
+                title: 'Reset all attendance?',
+                message: 'This will mark every member as absent. This action cannot be undone.',
+                confirmLabel: 'Reset attendance',
+                isConfirmation: true,
+                isDestructive: true
+            })) {
                 members = members.map(m => ({ ...m, present: false }));
                 saveData();
             }
@@ -343,10 +459,16 @@
             const listContainer = document.getElementById('member-list-display');
             listContainer.innerHTML = '';
 
-            const filteredMembers = members.filter(m => m.name.toLowerCase().includes(searchQuery));
+            const filteredMembers = members.filter(m =>
+                (!selectedMinistries || selectedMinistries.has(m.ministry)) &&
+                m.name.toLowerCase().includes(searchQuery)
+            );
 
             if (filteredMembers.length === 0) {
-                listContainer.innerHTML = `<li class="p-6 text-center text-slate-400">No members found</li>`;
+                const emptyMessage = !selectedMinistries
+                    ? 'No members found'
+                    : `No members found in ${[...selectedMinistries].join(', ')}`;
+                listContainer.innerHTML = `<li class="p-6 text-center text-slate-400">${emptyMessage}</li>`;
                 return;
             }
 
@@ -415,12 +537,12 @@
         // Update Statistics Counters
         function updateCounters() {
             const counts = { JAM: 0, VIA: 0, DANCE: 0, MAN: 0 };
-            let totalPresent = 0;
+            let allPresent = 0;
 
             members.forEach(m => {
-                if (m.present) {
+                if (m.present && Object.prototype.hasOwnProperty.call(counts, m.ministry)) {
                     counts[m.ministry] = (counts[m.ministry] || 0) + 1;
-                    totalPresent++;
+                    allPresent++;
                 }
             });
 
@@ -428,7 +550,28 @@
             document.getElementById('count-via').textContent = counts.VIA;
             document.getElementById('count-dance').textContent = counts.DANCE;
             document.getElementById('count-man').textContent = counts.MAN;
-            document.getElementById('total-present-tag').textContent = `${totalPresent} Present Total`;
+            document.getElementById('count-all').textContent = allPresent;
+
+            document.getElementById('summary-all').classList.toggle('hidden', Boolean(selectedMinistries));
+            document.querySelectorAll('.ministry-summary-card[data-ministry]').forEach(card => {
+                card.classList.toggle('hidden', Boolean(selectedMinistries && !selectedMinistries.has(card.dataset.ministry)));
+            });
+
+            const selectedPresent = selectedMinistries
+                ? [...selectedMinistries].reduce((total, ministry) => total + counts[ministry], 0)
+                : allPresent;
+            const selectedTotalCard = document.getElementById('selected-total-card');
+            selectedTotalCard.classList.toggle('hidden', !selectedMinistries || selectedMinistries.size < 2);
+            document.getElementById('count-selected').textContent = selectedPresent;
+            document.getElementById('selected-total-label').textContent = `${[...selectedMinistries || []].join(' + ')} TOTAL`;
+
+            const selectedLabel = !selectedMinistries
+                ? 'All Ministries'
+                : selectedMinistries.size === 1
+                    ? `${selectedMinistries.values().next().value} Ministry`
+                    : [...selectedMinistries].join(' + ');
+            document.getElementById('member-list-title').textContent = selectedLabel;
+            document.getElementById('total-present-tag').textContent = `${selectedPresent} Present Total`;
         }
 
         // Refresh UI
@@ -439,6 +582,12 @@
         }
 
         // Initial Load
+        document.getElementById('message-dialog-confirm').addEventListener('click', () => closeMessageDialog(true));
+        document.getElementById('message-dialog-cancel').addEventListener('click', () => closeMessageDialog(false));
+        document.getElementById('message-dialog').addEventListener('cancel', event => {
+            event.preventDefault();
+            closeMessageDialog(false);
+        });
         updateUI();
         loadMembers();
     </script>
